@@ -1,0 +1,264 @@
+/* =============================================
+   INTEGRICORP — GLOBAL STYLES
+   ============================================= */
+
+/* Google Fonts loaded via index.html */
+
+/* ── CSS Variables ─────────────────────────── */
+:root {
+  /* Backgrounds */
+  --bg-primary: #0A0A0A;
+  --bg-secondary: #141414;
+  --bg-elevated: #1E1E1E;
+
+  /* Brand Gold */
+  --gold: #C9A84C;
+  --gold-dark: #8B6914;
+  --gold-light: #F5E6C8;
+
+  /* Text */
+  --text-primary: #FFFFFF;
+  --text-secondary: #A0A0A0;
+  --text-muted: #606060;
+
+  /* UI */
+  --border: #2A2A2A;
+  --danger: #C0392B;
+
+  /* Typography */
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-heading: 'Oswald', sans-serif;
+  --font-body: 'IBM Plex Sans', sans-serif;
+
+  /* Spacing */
+  --section-gap: 96px;
+  --container-max: 1200px;
+  --container-pad: 24px;
+
+  /* Transitions */
+  --transition: 0.25s ease;
+  --transition-slow: 0.6s ease;
+}
+
+/* ── Reset ─────────────────────────────────── */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-body);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  background: none;
+  font-family: inherit;
+}
+
+ul, ol {
+  list-style: none;
+}
+
+/* ── Layout Utilities ──────────────────────── */
+.container {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding: 0 var(--container-pad);
+}
+
+.section {
+  padding: var(--section-gap) 0;
+}
+
+/* ── Typography ────────────────────────────── */
+.section-heading {
+  font-family: var(--font-display);
+  font-size: clamp(40px, 5vw, 56px);
+  color: var(--text-primary);
+  line-height: 1;
+  letter-spacing: 0.02em;
+  margin-bottom: 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.section-heading::after {
+  content: '';
+  display: block;
+  width: 60px;
+  height: 3px;
+  background: var(--gold);
+  margin-top: 8px;
+}
+
+.eyebrow {
+  font-family: var(--font-heading);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+/* ── Buttons ───────────────────────────────── */
+.btn-gold {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: var(--gold);
+  color: #000;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid var(--gold);
+  transition: transform var(--transition), filter var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+}
+
+.btn-gold:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.35);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 28px;
+  background: transparent;
+  color: var(--gold);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  border: 2px solid var(--gold);
+  transition: transform var(--transition), background var(--transition), color var(--transition), box-shadow var(--transition);
+  cursor: pointer;
+}
+
+.btn-ghost:hover {
+  background: var(--gold);
+  color: #000;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(201, 168, 76, 0.35);
+}
+
+/* ── Animations ────────────────────────────── */
+.animate-in {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity var(--transition-slow), transform var(--transition-slow);
+}
+
+.animate-in.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Noise Overlay ─────────────────────────── */
+.noise-overlay {
+  position: absolute;
+  inset: 0;
+  opacity: 0.05;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='1'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 200px 200px;
+}
+
+/* ── Page Hero Banner ──────────────────────── */
+.page-hero {
+  padding: 140px 0 80px;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.page-hero::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(201,168,76,0.06) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.page-hero h1 {
+  font-family: var(--font-display);
+  font-size: clamp(48px, 7vw, 80px);
+  color: var(--text-primary);
+  line-height: 1;
+  margin-bottom: 16px;
+}
+
+.page-hero p {
+  font-size: 18px;
+  color: var(--text-secondary);
+  max-width: 600px;
+}
+
+/* ── Cards shared ──────────────────────────── */
+.card {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  transition: transform var(--transition), box-shadow var(--transition);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);
+}
+
+/* ── Stars ─────────────────────────────────── */
+.stars {
+  color: var(--gold);
+  font-size: 16px;
+  letter-spacing: 2px;
+}
+
+/* ── Responsive helpers ────────────────────── */
+@media (max-width: 768px) {
+  :root {
+    --section-gap: 64px;
+    --container-pad: 16px;
+  }
+
+  .section-heading {
+    font-size: 36px;
+    margin-bottom: 32px;
+  }
+}

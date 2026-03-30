@@ -1,153 +1,190 @@
+import { Link } from 'react-router-dom'
+
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
-
   return (
-    <footer className="bg-[#1a1a1a] border-t border-[#34495e]/30">
-      {/* Main Footer */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12">
-          {/* Brand Column */}
-          <div className="lg:col-span-1">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-12 h-12 bg-[#2C3E50] rounded flex items-center justify-center">
-                <span className="font-display text-2xl font-bold text-white">F</span>
-              </div>
-              <div>
-                <p className="font-display text-lg font-bold uppercase tracking-wide text-white">
-                  Forthner&apos;s
-                </p>
-                <p className="text-xs text-[#bdc3c7] uppercase tracking-widest">Body Shop</p>
-              </div>
-            </div>
-            <p className="text-[#bdc3c7] text-sm leading-relaxed mb-6">
-              Heidelberg&apos;s trusted name in precision collision repair for over 40 years. Family-owned, quality-driven.
+    <footer className="footer">
+      <style>{`
+        .footer {
+          background: var(--bg-secondary);
+          border-top: 2px solid var(--gold);
+          padding: 64px 0 32px;
+          margin-top: auto;
+        }
+        .footer__grid {
+          display: grid;
+          grid-template-columns: repeat(4, 1fr);
+          gap: 48px;
+          margin-bottom: 48px;
+        }
+        .footer__logo {
+          font-family: var(--font-display);
+          font-size: 32px;
+          color: var(--gold);
+          display: block;
+          margin-bottom: 12px;
+        }
+        .footer__tagline {
+          font-family: var(--font-heading);
+          font-size: 12px;
+          letter-spacing: 0.2em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+        }
+        .footer__col-heading {
+          font-family: var(--font-heading);
+          font-size: 13px;
+          font-weight: 600;
+          letter-spacing: 0.15em;
+          text-transform: uppercase;
+          color: var(--gold);
+          margin-bottom: 20px;
+        }
+        .footer__links {
+          display: flex;
+          flex-direction: column;
+          gap: 10px;
+        }
+        .footer__links a {
+          font-size: 14px;
+          color: var(--text-secondary);
+          transition: color var(--transition);
+        }
+        .footer__links a:hover {
+          color: var(--text-primary);
+        }
+        .footer__hours-row {
+          display: flex;
+          justify-content: space-between;
+          gap: 8px;
+          font-size: 13px;
+          color: var(--text-secondary);
+          margin-bottom: 6px;
+        }
+        .footer__hours-row span:first-child {
+          color: var(--text-primary);
+        }
+        .footer__hours-row.closed span:last-child {
+          color: var(--text-muted);
+        }
+        .footer__contact-item {
+          font-size: 14px;
+          color: var(--text-secondary);
+          margin-bottom: 8px;
+        }
+        .footer__contact-item a {
+          color: var(--text-secondary);
+          transition: color var(--transition);
+        }
+        .footer__contact-item a:hover {
+          color: var(--gold);
+        }
+        .footer__social {
+          display: flex;
+          gap: 16px;
+          margin-top: 16px;
+        }
+        .footer__social a {
+          font-family: var(--font-heading);
+          font-size: 11px;
+          font-weight: 600;
+          letter-spacing: 0.1em;
+          text-transform: uppercase;
+          color: var(--text-secondary);
+          border: 1px solid var(--border);
+          padding: 6px 12px;
+          transition: color var(--transition), border-color var(--transition);
+        }
+        .footer__social a:hover {
+          color: var(--gold);
+          border-color: var(--gold);
+        }
+        .footer__bottom {
+          border-top: 1px solid var(--border);
+          padding-top: 24px;
+          font-size: 12px;
+          color: var(--text-muted);
+          text-align: center;
+        }
+        @media (max-width: 1024px) {
+          .footer__grid {
+            grid-template-columns: repeat(2, 1fr);
+            gap: 36px;
+          }
+        }
+        @media (max-width: 640px) {
+          .footer__grid {
+            grid-template-columns: 1fr;
+            gap: 32px;
+          }
+          .footer__social {
+            flex-wrap: wrap;
+          }
+        }
+      `}</style>
+      <div className="container">
+        <div className="footer__grid">
+          {/* Col 1: Logo + Tagline */}
+          <div>
+            <Link to="/" className="footer__logo">IntegriCorp</Link>
+            <p className="footer__tagline">Educate. Train. Empower.</p>
+            <p style={{ fontSize: 13, color: 'var(--text-muted)', marginTop: 12 }}>
+              Mississippi's premier firearms education and tactical training center.
             </p>
-            <div className="flex items-center gap-2">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-500 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500"></span>
-              </span>
-              <span className="text-xs text-green-400 uppercase tracking-wider font-semibold">
-                Digital Dispatch Active
-              </span>
+          </div>
+
+          {/* Col 2: Navigation */}
+          <div>
+            <p className="footer__col-heading">Navigation</p>
+            <nav className="footer__links">
+              <Link to="/">Home</Link>
+              <Link to="/courses">Courses</Link>
+              <Link to="/medical-kits">Medical Kits</Link>
+              <Link to="/about">About</Link>
+              <Link to="/events">Events</Link>
+              <Link to="/media">Media Gallery</Link>
+              <Link to="/faqs">FAQs</Link>
+              <Link to="/contact">Contact</Link>
+            </nav>
+          </div>
+
+          {/* Col 3: Hours */}
+          <div>
+            <p className="footer__col-heading">Hours of Operation</p>
+            <div className="footer__hours-row">
+              <span>Tuesday – Friday</span>
+              <span>9AM – 6PM</span>
+            </div>
+            <div className="footer__hours-row">
+              <span>Saturday</span>
+              <span>7AM – 7PM</span>
+            </div>
+            <div className="footer__hours-row closed">
+              <span>Sunday – Monday</span>
+              <span>CLOSED</span>
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* Col 4: Contact + Social */}
           <div>
-            <h3 className="font-display text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Quick Links
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Our Services
-                </a>
-              </li>
-              <li>
-                <a href="#heritage" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Our Heritage
-                </a>
-              </li>
-              <li>
-                <a href="#recovery" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Recovery Audit
-                </a>
-              </li>
-              <li>
-                <a href="#contact" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Request Estimate
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Services */}
-          <div>
-            <h3 className="font-display text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Services
-            </h3>
-            <ul className="space-y-3">
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Expert Painting
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Precision Bodywork
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Frame Straightening
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  OEM Parts
-                </a>
-              </li>
-              <li>
-                <a href="#services" className="text-[#bdc3c7] hover:text-white text-sm transition-colors">
-                  Insurance Claims
-                </a>
-              </li>
-            </ul>
-          </div>
-
-          {/* Contact */}
-          <div>
-            <h3 className="font-display text-sm font-semibold text-white uppercase tracking-wider mb-4">
-              Contact
-            </h3>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <svg className="h-5 w-5 text-[#E74C3C] flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
-                </svg>
-                <div className="text-sm text-[#bdc3c7]">
-                  <p>Heidelberg, MS</p>
-                  <p>Jasper County</p>
-                </div>
-              </li>
-              <li className="flex items-center gap-3">
-                <svg className="h-5 w-5 text-[#E74C3C] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M2 3a1 1 0 011-1h2.153a1 1 0 01.986.836l.74 4.435a1 1 0 01-.54 1.06l-1.548.773a11.037 11.037 0 006.105 6.105l.774-1.548a1 1 0 011.059-.54l4.435.74a1 1 0 01.836.986V17a1 1 0 01-1 1h-2C7.82 18 2 12.18 2 5V3z" />
-                </svg>
-                <a href="tel:6017872000" className="text-sm text-[#bdc3c7] hover:text-white transition-colors">
-                  (601) 787-2000
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <svg className="h-5 w-5 text-[#E74C3C] flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clipRule="evenodd" />
-                </svg>
-                <div className="text-sm text-[#bdc3c7]">
-                  <p>Mon-Fri: 8AM - 5PM</p>
-                  <p>Sat: By Appointment</p>
-                </div>
-              </li>
-            </ul>
+            <p className="footer__col-heading">Contact</p>
+            <div className="footer__contact-item">
+              <a href="tel:6013362054">601-336-2054</a>
+            </div>
+            <div className="footer__contact-item">
+              <a href="mailto:integricorpllc@gmail.com">integricorpllc@gmail.com</a>
+            </div>
+            <div className="footer__social">
+              <a href="https://facebook.com/integricorp" target="_blank" rel="noopener noreferrer">FB</a>
+              <a href="https://instagram.com/integricorp" target="_blank" rel="noopener noreferrer">IG</a>
+              <a href="https://tiktok.com/@marlonhuddlestons" target="_blank" rel="noopener noreferrer">TT</a>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Bar */}
-      <div className="border-t border-[#34495e]/30">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-sm text-[#bdc3c7]">
-              &copy; {currentYear} Forthner&apos;s Body Shop. All rights reserved.
-            </p>
-            <div className="flex items-center gap-6">
-              <span className="text-xs text-[#bdc3c7]/60 uppercase tracking-wider">
-                Serving Jasper County Since 1984
-              </span>
-            </div>
-          </div>
+        <div className="footer__bottom">
+          © 2024 IntegriCorp LLC. All Rights Reserved. | IntegriCorp LLC — Educate. Train. Empower.
         </div>
       </div>
     </footer>
-  );
+  )
 }
