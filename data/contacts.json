@@ -1,0 +1,47 @@
+[
+  {
+    "id": "contact_001",
+    "company": "Lone Star Recovery Services",
+    "contactName": "Mike Hargrove",
+    "phone": "+15125550101",
+    "state": "TX",
+    "notes": "Large fleet, 12 repo trucks",
+    "addedAt": "2026-03-31T00:00:00.000Z"
+  },
+  {
+    "id": "contact_002",
+    "company": "Southeast Auto Recovery",
+    "contactName": "Donna Perkins",
+    "phone": "+14045550182",
+    "state": "GA",
+    "notes": "Owner-operated, 4 trucks",
+    "addedAt": "2026-03-31T00:00:00.000Z"
+  },
+  {
+    "id": "contact_003",
+    "company": "Great Lakes Repossession LLC",
+    "contactName": "Tom Brezinski",
+    "phone": "+13135550247",
+    "state": "MI",
+    "notes": "Works with 3 major lenders",
+    "addedAt": "2026-03-31T00:00:00.000Z"
+  },
+  {
+    "id": "contact_004",
+    "company": "Pacific Coast Recovery",
+    "contactName": "Sandra Wu",
+    "phone": "+13235550399",
+    "state": "CA",
+    "notes": "High-volume, 20+ agents",
+    "addedAt": "2026-03-31T00:00:00.000Z"
+  },
+  {
+    "id": "contact_005",
+    "company": "Midland Vehicle Recovery",
+    "contactName": "James Okafor",
+    "phone": "+13125550456",
+    "state": "IL",
+    "notes": "Interested in tech solutions",
+    "addedAt": "2026-03-31T00:00:00.000Z"
+  }
+]
