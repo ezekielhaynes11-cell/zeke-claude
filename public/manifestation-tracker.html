@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Manifestation Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: #0a0a0f;
+      color: #fff;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding-bottom: 80px;
+    }
+
+    /* Stars background */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image:
+        radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.4) 0%, transparent 100%),
+        radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 50% 60%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 10% 80%, rgba(255,255,255,0.3) 0%, transparent 100%),
+        radial-gradient(1px 1px at 90% 70%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 35% 15%, rgba(255,255,255,0.25) 0%, transparent 100%),
+        radial-gradient(1px 1px at 65% 85%, rgba(255,255,255,0.2) 0%, transparent 100%),
+        radial-gradient(1px 1px at 5% 50%, rgba(255,255,255,0.15) 0%, transparent 100%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper { position: relative; z-index: 1; }
+
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 60px 20px 30px;
+    }
+    .header .eyebrow {
+      font-size: 11px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: #c084fc;
+      margin-bottom: 12px;
+      font-weight: 600;
+    }
+    .header h1 {
+      font-size: clamp(2.2rem, 6vw, 3.5rem);
+      font-weight: 800;
+      background: linear-gradient(135deg, #d8b4fe, #f9a8d4, #fde68a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 14px;
+      line-height: 1.1;
+    }
+    .header p {
+      color: #9ca3af;
+      font-size: 1.05rem;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.6;
+    }
+
+    /* Timeframe toggle */
+    .toggle-wrap {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 36px;
+    }
+    .toggle {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 999px;
+      padding: 4px;
+      display: flex;
+      gap: 4px;
+    }
+    .toggle button {
+      padding: 8px 24px;
+      border-radius: 999px;
+      border: none;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.25s;
+      color: #9ca3af;
+      background: transparent;
+    }
+    .toggle button.active {
+      background: linear-gradient(135deg, #7c3aed, #db2777);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(124,58,237,0.4);
+    }
+    .toggle button:not(.active):hover {
+      color: #fff;
+      background: rgba(255,255,255,0.07);
+    }
+
+    /* Affirmation banner */
+    .affirmation {
+      max-width: 600px;
+      margin: 0 auto 36px;
+      padding: 0 16px;
+      transition: opacity 0.4s, transform 0.4s;
+    }
+    .affirmation.hidden { opacity: 0; transform: translateY(-8px); pointer-events: none; }
+    .affirmation-inner {
+      background: linear-gradient(135deg, rgba(88,28,135,0.6), rgba(157,23,77,0.5));
+      border: 1px solid rgba(167,139,250,0.4);
+      border-radius: 16px;
+      padding: 20px 24px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(124,58,237,0.25);
+    }
+    .affirmation-inner .stamp {
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: #c4b5fd;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .affirmation-inner blockquote {
+      font-size: 1.05rem;
+      font-style: italic;
+      color: #f3f4f6;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+    /* Grid */
+    .grid {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+    }
+
+    /* Category card */
+    .cat-card {
+      border-radius: 20px;
+      padding: 24px;
+      border: 1px solid;
+    }
+    .cat-card.health   { background: linear-gradient(135deg, rgba(6,78,59,0.6), rgba(20,83,45,0.4)); border-color: rgba(52,211,153,0.35); box-shadow: 0 8px 32px rgba(52,211,153,0.1); }
+    .cat-card.financial{ background: linear-gradient(135deg, rgba(92,45,5,0.6), rgba(120,53,15,0.4)); border-color: rgba(251,191,36,0.35); box-shadow: 0 8px 32px rgba(251,191,36,0.1); }
+    .cat-card.relationships{ background: linear-gradient(135deg, rgba(136,19,55,0.6), rgba(157,23,77,0.4)); border-color: rgba(251,113,133,0.35); box-shadow: 0 8px 32px rgba(251,113,133,0.1); }
+    .cat-card.growth   { background: linear-gradient(135deg, rgba(76,29,149,0.6), rgba(88,28,135,0.4)); border-color: rgba(167,139,250,0.35); box-shadow: 0 8px 32px rgba(167,139,250,0.1); }
+
+    .cat-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+    }
+    .cat-header .icon { font-size: 22px; }
+    .cat-header h2 { font-size: 1.15rem; font-weight: 700; flex: 1; }
+    .cat-header .count { font-size: 12px; color: #9ca3af; }
+
+    .items {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    .item-btn {
+      position: relative;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 13px;
+      font-weight: 600;
+      color: #d1d5db;
+      cursor: pointer;
+      text-align: left;
+      transition: all 0.2s;
+      line-height: 1.3;
+    }
+    .item-btn:hover {
+      background: rgba(255,255,255,0.1);
+      border-color: rgba(255,255,255,0.2);
+      color: #fff;
+      transform: scale(1.02);
+    }
+    .item-btn.active {
+      background: rgba(255,255,255,0.18);
+      border-color: rgba(255,255,255,0.4);
+      color: #fff;
+      transform: scale(1.03);
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+    }
+    .item-btn .check {
+      position: absolute;
+      top: 7px;
+      right: 9px;
+      font-size: 11px;
+      color: #a3e635;
+    }
+
+    /* Footer bar */
+    .footer-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      background: rgba(10,10,15,0.92);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255,255,255,0.08);
+      padding: 14px 24px;
+      transition: opacity 0.3s, transform 0.3s;
+    }
+    .footer-bar.hidden { opacity: 0; transform: translateY(100%); pointer-events: none; }
+    .footer-inner {
+      max-width: 700px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .footer-inner .count-label { font-size: 14px; color: #d1d5db; }
+    .footer-inner .count-label span { font-size: 1.2rem; font-weight: 800; color: #fff; }
+    .footer-inner .universe { font-size: 13px; color: #c084fc; font-weight: 500; }
+
+    /* Reset button */
+    .reset-wrap {
+      display: flex;
+      justify-content: center;
+      margin: 32px 0 8px;
+    }
+    .reset-btn {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 999px;
+      color: #6b7280;
+      font-size: 13px;
+      padding: 8px 20px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .reset-btn:hover { color: #fff; border-color: rgba(255,255,255,0.35); }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+  <div class="header">
+    <p class="eyebrow">✦ Your Reality Begins Here ✦</p>
+    <h1>Manifest Your Day</h1>
+    <p>Choose what you're calling into your life. Click to claim it. The universe is listening.</p>
+  </div>
+
+  <div class="toggle-wrap">
+    <div class="toggle">
+      <button id="btn-day" class="active" onclick="setTimeframe('day')">Today</button>
+      <button id="btn-week" onclick="setTimeframe('week')">This Week</button>
+    </div>
+  </div>
+
+  <div class="affirmation hidden" id="affirmation">
+    <div class="affirmation-inner">
+      <p class="stamp">✦ It is done ✦</p>
+      <blockquote id="affirmation-text"></blockquote>
+    </div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+
+  <div class="reset-wrap">
+    <button class="reset-btn" onclick="resetAll()">Clear all intentions</button>
+  </div>
+</div>
+
+<div class="footer-bar hidden" id="footer">
+  <div class="footer-inner">
+    <p class="count-label"><span id="footer-count">0</span> intentions set <span id="footer-time">today</span></p>
+    <p class="universe">✦ The universe has received your order ✦</p>
+  </div>
+</div>
+
+<script>
+const CATEGORIES = [
+  {
+    id: "health", label: "Health", emoji: "🌿", cls: "health",
+    items: [
+      { id: "h1", text: "Vibrant Energy",    affirmation: "Your body radiates with unstoppable vitality." },
+      { id: "h2", text: "Mental Clarity",    affirmation: "Your mind is sharp, focused, and at peace." },
+      { id: "h3", text: "Deep Rest",         affirmation: "You wake each day fully restored and renewed." },
+      { id: "h4", text: "Physical Strength", affirmation: "Your body grows stronger with every breath." },
+      { id: "h5", text: "Emotional Balance", affirmation: "You move through life grounded and centered." },
+      { id: "h6", text: "Glowing Wellness",  affirmation: "Health and vitality flow naturally to you." },
+    ]
+  },
+  {
+    id: "financial", label: "Financial", emoji: "💰", cls: "financial",
+    items: [
+      { id: "f1", text: "Abundance",          affirmation: "Money flows to you freely and effortlessly." },
+      { id: "f2", text: "Career Growth",      affirmation: "New opportunities seek you out every day." },
+      { id: "f3", text: "Financial Freedom",  affirmation: "You are liberated from financial worry forever." },
+      { id: "f4", text: "Wealth Building",    affirmation: "Your investments multiply and grow with ease." },
+      { id: "f5", text: "Dream Business",     affirmation: "Your vision transforms into thriving success." },
+      { id: "f6", text: "Generous Living",    affirmation: "You have more than enough to give freely." },
+    ]
+  },
+  {
+    id: "relationships", label: "Relationships", emoji: "❤️", cls: "relationships",
+    items: [
+      { id: "r1", text: "Deep Connection",   affirmation: "Love surrounds you in every relationship." },
+      { id: "r2", text: "True Partnership",  affirmation: "Your perfect partner is drawn to you now." },
+      { id: "r3", text: "Lasting Friendships", affirmation: "You attract loyal and uplifting people." },
+      { id: "r4", text: "Family Harmony",    affirmation: "Peace and love fill your home completely." },
+      { id: "r5", text: "Self-Love",         affirmation: "You are worthy of all the love you desire." },
+      { id: "r6", text: "New Beginnings",    affirmation: "Beautiful connections are entering your life." },
+    ]
+  },
+  {
+    id: "growth", label: "Personal Growth", emoji: "✨", cls: "growth",
+    items: [
+      { id: "g1", text: "Confidence",   affirmation: "You walk into every room owning your power." },
+      { id: "g2", text: "Purpose",      affirmation: "Your path is clear and filled with meaning." },
+      { id: "g3", text: "Creativity",   affirmation: "Brilliant ideas flow through you constantly." },
+      { id: "g4", text: "Inner Peace",  affirmation: "You are calm in the eye of any storm." },
+      { id: "g5", text: "Wisdom",       affirmation: "Every experience makes you wiser and stronger." },
+      { id: "g6", text: "Gratitude",    affirmation: "Blessings multiply the more you appreciate them." },
+    ]
+  }
+];
+
+let manifested = new Set();
+let timeframe = "day";
+
+function setTimeframe(t) {
+  timeframe = t;
+  document.getElementById("btn-day").classList.toggle("active", t === "day");
+  document.getElementById("btn-week").classList.toggle("active", t === "week");
+  document.getElementById("footer-time").textContent = t === "day" ? "today" : "this week";
+}
+
+function toggle(item) {
+  if (manifested.has(item.id)) {
+    manifested.delete(item.id);
+    hideAffirmation();
+  } else {
+    manifested.add(item.id);
+    showAffirmation(item.affirmation);
+  }
+  updateUI();
+}
+
+function showAffirmation(text) {
+  const el = document.getElementById("affirmation");
+  document.getElementById("affirmation-text").textContent = "\u201C" + text + "\u201D";
+  el.classList.remove("hidden");
+}
+
+function hideAffirmation() {
+  document.getElementById("affirmation").classList.add("hidden");
+}
+
+function resetAll() {
+  manifested.clear();
+  hideAffirmation();
+  updateUI();
+}
+
+function updateUI() {
+  const total = manifested.size;
+
+  // Update footer
+  const footer = document.getElementById("footer");
+  document.getElementById("footer-count").textContent = total;
+  footer.classList.toggle("hidden", total === 0);
+
+  // Update each button and count
+  CATEGORIES.forEach(cat => {
+    const catCount = cat.items.filter(i => manifested.has(i.id)).length;
+    const countEl = document.getElementById("count-" + cat.id);
+    if (countEl) countEl.textContent = catCount + "/" + cat.items.length + " claimed";
+
+    cat.items.forEach(item => {
+      const btn = document.getElementById("item-" + item.id);
+      if (!btn) return;
+      if (manifested.has(item.id)) {
+        btn.classList.add("active");
+        btn.querySelector(".check").style.display = "block";
+      } else {
+        btn.classList.remove("active");
+        btn.querySelector(".check").style.display = "none";
+      }
+    });
+  });
+}
+
+function render() {
+  const grid = document.getElementById("grid");
+  grid.innerHTML = "";
+  CATEGORIES.forEach(cat => {
+    const card = document.createElement("div");
+    card.className = "cat-card " + cat.cls;
+    card.innerHTML = `
+      <div class="cat-header">
+        <span class="icon">${cat.emoji}</span>
+        <h2>${cat.label}</h2>
+        <span class="count" id="count-${cat.id}">0/${cat.items.length} claimed</span>
+      </div>
+      <div class="items">${cat.items.map(item => `
+        <button id="item-${item.id}" class="item-btn" onclick='toggleItem(${JSON.stringify(item)})'>
+          <span class="check" style="display:none">✓</span>
+          ${item.text}
+        </button>
+      `).join("")}</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function toggleItem(item) {
+  toggle(item);
+}
+
+render();
+updateUI();
+</script>
+</body>
+</html>
