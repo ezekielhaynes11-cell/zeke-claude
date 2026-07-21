@@ -42,6 +42,28 @@ Each sweep runs the same logic as `POST /sweep`: audit personalization/complianc
 across the GoJiBerry agents and campaigns, then draft every follow-up that's due.
 Set `SWEEP_MODE=send` to let those sweeps act instead of just drafting.
 
+### Token controls (so it doesn't run away)
+
+Every sweep is bounded on several axes so an always-on agent can't quietly burn
+budget:
+
+- **Cadence** — `SWEEP_INTERVAL_MINUTES` (default every 6h). Lower it for freshness,
+  raise it (or set `0`) to spend less.
+- **Overlap lock** — a sweep never starts while the previous one is still running.
+- **Daily cap** — `NOAH_DAILY_TOKEN_CAP` (default 750k tokens/UTC-day). Once a day's
+  scheduled sweeps hit it, further scheduled sweeps are skipped until the next day.
+  (Manual `POST /sweep` calls are human-initiated and bypass the cap.)
+- **Effort** — `NOAH_EFFORT` defaults to `medium`, not `high` — routine compliance
+  checks don't need maximum reasoning depth.
+- **Bounded scope** — sweeps look at *active* agents/campaigns only, prioritize the
+  most-overdue threads, cap follow-ups per sweep (`SWEEP_MAX_FOLLOWUPS`, default 25),
+  and open a thread's full messages only when needed.
+- **Per-run ceilings** — `NOAH_MAX_TURNS` (tool-loop turns) and `NOAH_MAX_TOKENS`
+  (output per response); optional `NOAH_TOKEN_BUDGET` for a hard API-native budget.
+
+Every sweep logs its actual token spend and the running daily total; `GET /` reports
+`usageToday`.
+
 ### Example
 
 ```bash
@@ -59,9 +81,15 @@ personalized draft).
 | `ANTHROPIC_API_KEY` | yes    | Claude access (Noah's brain) |
 | `GOJIBERRY_TOKEN` | if your MCP needs auth | Bearer token for `https://mcp.gojiberry.ai` |
 | `GOJIBERRY_MCP_URL` | no     | Override the MCP endpoint (defaults to `https://mcp.gojiberry.ai`) |
-| `SWEEP_INTERVAL_MINUTES` | no | Follow-up sweep cadence (default `360`; `0` disables) |
+| `SWEEP_INTERVAL_MINUTES` | no | Follow-up sweep cadence (default `360` = every 6h; `0` disables) |
 | `SWEEP_MODE`      | no       | `draft` (default) or `send` for scheduled sweeps |
 | `SWEEP_ON_BOOT`   | no       | `true` to run one sweep ~15s after startup |
+| `SWEEP_MAX_FOLLOWUPS` | no   | Cap follow-ups drafted per sweep (default `25`) |
+| `NOAH_DAILY_TOKEN_CAP` | no  | Skip scheduled sweeps past this many tokens/UTC-day (default `750000`; `0` = no cap) |
+| `NOAH_EFFORT`     | no       | Reasoning effort / token spend: `low` \| `medium` (default) \| `high` \| `max` |
+| `NOAH_MAX_TURNS`  | no       | Max tool-loop turns per run (default `12`) |
+| `NOAH_MAX_TOKENS` | no       | Per-response output ceiling (default `12000`) |
+| `NOAH_TOKEN_BUDGET` | no     | API-native per-run token budget (min `20000`; unset = off) |
 | `SUPABASE_URL`    | no       | Optional prospect/outreach persistence |
 | `SUPABASE_KEY`    | no       | Optional persistence |
 | `PORT`            | no       | Defaults to 3000 |

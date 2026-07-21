@@ -1,7 +1,7 @@
 import 'node:process'
 import express from 'express'
 import { runNoah, prospectTask, sweepTask, reviewTask } from './lib/noah.js'
-import { startScheduler, runSweep } from './lib/scheduler.js'
+import { startScheduler, runSweep, usageStatus } from './lib/scheduler.js'
 import {
   crmEnabled,
   upsertProspect,
@@ -23,7 +23,11 @@ app.get('/', (_req, res) =>
     sweep: {
       intervalMinutes: Number(process.env.SWEEP_INTERVAL_MINUTES ?? 360),
       mode: process.env.SWEEP_MODE ?? 'draft',
+      effort: process.env.NOAH_EFFORT ?? 'medium',
+      maxTurns: Number(process.env.NOAH_MAX_TURNS ?? 12),
+      taskBudget: Number(process.env.NOAH_TOKEN_BUDGET ?? 0) || 'disabled',
     },
+    usageToday: usageStatus(),
     endpoints: {
       'POST /sweep': 'run the personalization/compliance + follow-up sweep now',
       'POST /review': 'compliance review of agents/campaigns (optional { target })',

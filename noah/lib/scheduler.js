@@ -8,8 +8,38 @@ import { runNoah, sweepTask } from './noah.js'
 //   SWEEP_INTERVAL_MINUTES  how often to sweep (default 360 = every 6h; 0 = off)
 //   SWEEP_MODE              "draft" (default) | "send"
 //   SWEEP_ON_BOOT           "true" to run one sweep shortly after startup
+//   NOAH_DAILY_TOKEN_CAP    skip scheduled sweeps once this many tokens are spent
+//                           in a UTC day (default 750000; 0 = no cap)
 
 let running = false
+
+// ── Daily token accounting (guards scheduled sweeps against runaway spend) ────
+const DAILY_CAP = Number(process.env.NOAH_DAILY_TOKEN_CAP ?? 750000)
+let capDay = utcDay()
+let usedToday = 0
+
+function utcDay() {
+  return new Date().toISOString().slice(0, 10)
+}
+
+function noteUsage(usage) {
+  const today = utcDay()
+  if (today !== capDay) {
+    capDay = today
+    usedToday = 0
+  }
+  usedToday += (usage?.input_tokens ?? 0) + (usage?.output_tokens ?? 0)
+}
+
+function overDailyCap() {
+  if (!Number.isFinite(DAILY_CAP) || DAILY_CAP <= 0) return false
+  if (utcDay() !== capDay) return false // new day resets on next noteUsage
+  return usedToday >= DAILY_CAP
+}
+
+export function usageStatus() {
+  return { day: capDay, usedToday, dailyCap: DAILY_CAP }
+}
 
 export async function runSweep(mode = process.env.SWEEP_MODE ?? 'draft') {
   if (running) {
@@ -21,8 +51,13 @@ export async function runSweep(mode = process.env.SWEEP_MODE ?? 'draft') {
   try {
     console.log(`[sweep] start (${mode}) ${startedAt}`)
     const result = await runNoah(sweepTask(), { mode })
-    console.log(`[sweep] done — ${result.usage?.output_tokens ?? '?'} output tokens`)
-    return { startedAt, mode, ...result }
+    noteUsage(result.totalUsage)
+    console.log(
+      `[sweep] done — ${result.totalUsage?.output_tokens ?? '?'} out / ` +
+        `${result.totalUsage?.input_tokens ?? '?'} in tokens; ` +
+        `day total ${usedToday}${DAILY_CAP > 0 ? `/${DAILY_CAP}` : ''}`
+    )
+    return { startedAt, mode, usageToday: usageStatus(), ...result }
   } catch (err) {
     console.error('[sweep] error', err)
     return { startedAt, mode, error: err.message }
@@ -39,15 +74,24 @@ export function startScheduler() {
   }
 
   const ms = minutes * 60 * 1000
-  console.log(`[scheduler] follow-up sweep every ${minutes} min`)
+  console.log(
+    `[scheduler] follow-up sweep every ${minutes} min` +
+      (DAILY_CAP > 0 ? `, daily token cap ${DAILY_CAP}` : ', no daily token cap')
+  )
 
-  // Fire-and-forget; runSweep guards against overlap and never throws.
-  setInterval(() => {
-    runSweep()
-  }, ms)
+  const tick = () => {
+    if (overDailyCap()) {
+      console.log(
+        `[scheduler] daily token cap reached (${usedToday}/${DAILY_CAP}) — skipping sweep`
+      )
+      return
+    }
+    runSweep() // fire-and-forget; runSweep guards overlap and never throws
+  }
+
+  setInterval(tick, ms)
 
   if (process.env.SWEEP_ON_BOOT === 'true') {
-    // Small delay so the server is listening and healthy first.
-    setTimeout(() => runSweep(), 15_000)
+    setTimeout(tick, 15_000) // let the server become healthy first
   }
 }
