@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "gojiberry": {
+      "type": "http",
+      "url": "https://mcp.gojiberry.ai"
+    }
+  }
+}
