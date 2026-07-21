@@ -73,15 +73,45 @@ export async function runNoah(task, { mode = 'draft' } = {}) {
   return { text, stopReason: final.stop_reason, usage: final.usage }
 }
 
-// Build an outreach task for one prospect from a plain object.
+// Full sweep: personalization/compliance review of the GoJiBerry system + the
+// follow-ups that are due right now. This is what the scheduler runs.
+export function sweepTask() {
+  return `Run your standard sweep over the GoJiBerry outreach system.
+
+1. Compliance & personalization review: pull the active agents (list_agents /
+   get_agent) and campaigns (list_campaigns / get_campaign). Judge each message
+   step against the personalization standard and record compliance_findings for
+   anything generic, templated, spammy, off-voice, or missing personalization —
+   with the exact fix.
+2. Follow-ups due: scan the unibox (list_unibox_threads, get_intent_type_counts)
+   for threads with no reply after ~2-4 business days, replies that need a
+   response, and prospects going cold. For each, produce a personalized next
+   touch in followups_due.
+
+Return the JSON per your output contract.`
+}
+
+// Compliance review only, optionally scoped to a specific agent/campaign.
+export function reviewTask(target) {
+  const scope = target
+    ? `Focus on: ${target}.`
+    : 'Cover every active agent and campaign.'
+  return `Do a personalization and communication compliance review of the
+GoJiBerry outreach system. ${scope} For each weak or non-compliant message step,
+record a compliance_finding with the exact rewrite. Return the JSON per your
+output contract (compliance_findings is the part that matters here).`
+}
+
+// Ad-hoc: build a personalized first-touch plan for one prospect.
 export function prospectTask(prospect) {
   const lines = Object.entries(prospect)
     .filter(([, v]) => v != null && v !== '')
     .map(([k, v]) => `- ${k}: ${v}`)
     .join('\n')
-  return `Build a personalized outreach sequence for this prospect. Research them,
-diagnose the specific pain, map it to the single strongest Yield Architect
-offering + outcome, and return the JSON per your output contract.
+  return `Build a personalized outreach plan for this prospect. Research them
+(enrich via the GoJiBerry tools if the record is thin), diagnose the specific
+pain, map it to the single strongest Yield Architect offering + outcome, and
+return the JSON per your output contract (use followups_due for the touches).
 
 Prospect:
 ${lines}`

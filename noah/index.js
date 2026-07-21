@@ -1,6 +1,7 @@
 import 'node:process'
 import express from 'express'
-import { runNoah, prospectTask } from './lib/noah.js'
+import { runNoah, prospectTask, sweepTask, reviewTask } from './lib/noah.js'
+import { startScheduler, runSweep } from './lib/scheduler.js'
 import {
   crmEnabled,
   upsertProspect,
@@ -17,17 +18,49 @@ app.get('/health', (_req, res) => res.sendStatus(200))
 app.get('/', (_req, res) =>
   res.json({
     agent: 'Noah',
-    role: 'Yield Architect outreach — highest positive-reply rate',
+    role: 'Personalization & communication compliance layer over the GoJiBerry (jibri) outreach agent, plus follow-up scheduler',
     crm: crmEnabled() ? 'supabase' : 'disabled',
+    sweep: {
+      intervalMinutes: Number(process.env.SWEEP_INTERVAL_MINUTES ?? 360),
+      mode: process.env.SWEEP_MODE ?? 'draft',
+    },
     endpoints: {
-      'POST /outreach': 'draft (or send) a sequence for one prospect',
-      'POST /campaign': 'draft (or send) sequences for many prospects',
+      'POST /sweep': 'run the personalization/compliance + follow-up sweep now',
+      'POST /review': 'compliance review of agents/campaigns (optional { target })',
+      'POST /outreach': 'personalized first-touch plan for one prospect',
+      'POST /campaign': 'plans for many prospects',
       'POST /ask': 'free-form outreach task for Noah',
     },
   })
 )
 
-// ── One prospect ──────────────────────────────────────────────────────────────
+// ── Follow-up + compliance sweep (also runs on the schedule) ──────────────────
+// body: { mode?: "draft" | "send" }
+app.post('/sweep', async (req, res) => {
+  const { mode } = req.body ?? {}
+  try {
+    const result = await runSweep(mode)
+    res.json(result)
+  } catch (err) {
+    console.error('[sweep endpoint]', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Compliance review only ────────────────────────────────────────────────────
+// body: { target?: "campaign X" | "agent Y", mode?: "draft" | "send" }
+app.post('/review', async (req, res) => {
+  const { target, mode = 'draft' } = req.body ?? {}
+  try {
+    const result = await runNoah(reviewTask(target), { mode })
+    res.json({ mode, target: target ?? 'all', ...result })
+  } catch (err) {
+    console.error('[review]', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── One prospect (first-touch plan) ──────────────────────────────────────────
 // body: { prospect: {...}, mode?: "draft" | "send" }
 app.post('/outreach', async (req, res) => {
   const { prospect, mode = 'draft' } = req.body ?? {}
@@ -96,4 +129,7 @@ app.post('/ask', async (req, res) => {
 
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT ?? 3000
-app.listen(PORT, () => console.log(`Noah listening on port ${PORT}`))
+app.listen(PORT, () => {
+  console.log(`Noah listening on port ${PORT}`)
+  startScheduler()
+})
