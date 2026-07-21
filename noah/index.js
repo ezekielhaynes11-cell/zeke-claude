@@ -1,0 +1,99 @@
+import 'node:process'
+import express from 'express'
+import { runNoah, prospectTask } from './lib/noah.js'
+import {
+  crmEnabled,
+  upsertProspect,
+  setProspectStatus,
+  logOutreach,
+} from './lib/supabase.js'
+
+const app = express()
+app.use(express.json({ limit: '1mb' }))
+
+// ── Health check (Railway) ────────────────────────────────────────────────────
+app.get('/health', (_req, res) => res.sendStatus(200))
+
+app.get('/', (_req, res) =>
+  res.json({
+    agent: 'Noah',
+    role: 'Yield Architect outreach — highest positive-reply rate',
+    crm: crmEnabled() ? 'supabase' : 'disabled',
+    endpoints: {
+      'POST /outreach': 'draft (or send) a sequence for one prospect',
+      'POST /campaign': 'draft (or send) sequences for many prospects',
+      'POST /ask': 'free-form outreach task for Noah',
+    },
+  })
+)
+
+// ── One prospect ──────────────────────────────────────────────────────────────
+// body: { prospect: {...}, mode?: "draft" | "send" }
+app.post('/outreach', async (req, res) => {
+  const { prospect, mode = 'draft' } = req.body ?? {}
+  if (!prospect || typeof prospect !== 'object') {
+    return res.status(400).json({ error: 'prospect object is required' })
+  }
+  try {
+    const prospectId = crmEnabled() ? await upsertProspect(prospect) : null
+    const result = await runNoah(prospectTask(prospect), { mode })
+
+    if (prospectId) {
+      await logOutreach(prospectId, { mode, output: result.text })
+      await setProspectStatus(prospectId, mode === 'send' ? 'contacted' : 'drafted')
+    }
+
+    res.json({ mode, prospectId, ...result })
+  } catch (err) {
+    console.error('[outreach]', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Many prospects ────────────────────────────────────────────────────────────
+// body: { prospects: [ {...}, ... ], mode?: "draft" | "send" }
+app.post('/campaign', async (req, res) => {
+  const { prospects, mode = 'draft' } = req.body ?? {}
+  if (!Array.isArray(prospects) || prospects.length === 0) {
+    return res.status(400).json({ error: 'prospects array is required' })
+  }
+  const results = []
+  for (const prospect of prospects) {
+    try {
+      const prospectId = crmEnabled() ? await upsertProspect(prospect) : null
+      const result = await runNoah(prospectTask(prospect), { mode })
+      if (prospectId) {
+        await logOutreach(prospectId, { mode, output: result.text })
+        await setProspectStatus(
+          prospectId,
+          mode === 'send' ? 'contacted' : 'drafted'
+        )
+      }
+      results.push({ prospect: prospect.name ?? prospect.email, prospectId, ...result })
+    } catch (err) {
+      console.error('[campaign]', prospect?.email, err)
+      results.push({ prospect: prospect?.name ?? prospect?.email, error: err.message })
+    }
+  }
+  res.json({ mode, count: results.length, results })
+})
+
+// ── Free-form task ────────────────────────────────────────────────────────────
+// body: { task: "re-engage the prospects who went cold last month", mode?: ... }
+app.post('/ask', async (req, res) => {
+  const { task, mode = 'draft' } = req.body ?? {}
+  if (!task || typeof task !== 'string') {
+    return res.status(400).json({ error: 'task string is required' })
+  }
+  try {
+    const result = await runNoah(task, { mode })
+    res.json({ mode, ...result })
+  } catch (err) {
+    console.error('[ask]', err)
+    res.status(500).json({ error: err.message })
+  }
+})
+
+// ── Start ─────────────────────────────────────────────────────────────────────
+const PORT = process.env.PORT ?? 3000
+app.listen(PORT, () => console.log(`Noah listening on port ${PORT}`))
